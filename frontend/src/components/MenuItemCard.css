@@ -1,0 +1,66 @@
+.menu-card {
+  background: white;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.menu-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-lg);
+}
+
+.menu-card-emoji {
+  background: linear-gradient(135deg, #FFF3E0, #FFECB3);
+  font-size: 64px;
+  text-align: center;
+  padding: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.menu-card-body {
+  padding: 16px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.menu-card-name {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--dark);
+  margin-bottom: 6px;
+}
+
+.menu-card-desc {
+  font-size: 13px;
+  color: var(--text-light);
+  line-height: 1.5;
+  flex: 1;
+  margin-bottom: 14px;
+}
+
+.menu-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.menu-card-price {
+  font-size: 20px;
+  font-weight: 900;
+  color: var(--red);
+}
+
+.add-btn {
+  transition: all 0.2s;
+}
+
+.add-btn.adding {
+  background: var(--success) !important;
+}
