@@ -15,7 +15,10 @@ export default function MenuItemCard({ item }) {
 
   return (
     <div className="menu-card">
-      <div className="menu-card-emoji">{item.emoji}</div>
+      {item.image_url
+        ? <img className="menu-card-img" src={item.image_url} alt={item.name} />
+        : <div className="menu-card-emoji">{item.emoji}</div>
+      }
       <div className="menu-card-body">
         <div className="menu-card-name">{item.name}</div>
         <div className="menu-card-desc">{item.description}</div>

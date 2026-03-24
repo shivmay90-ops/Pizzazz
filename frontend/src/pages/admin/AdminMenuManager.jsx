@@ -14,6 +14,7 @@ export default function AdminMenuManager() {
   const [saving, setSaving] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState(null);
   const [filterCat, setFilterCat] = useState('all');
+  const [uploadingId, setUploadingId] = useState(null);
   const token = localStorage.getItem('admin_token');
 
   const fetchItems = () => {
@@ -69,6 +70,36 @@ export default function AdminMenuManager() {
     setItems(prev => prev.map(i => i.id === item.id ? updated : i));
   };
 
+  const handleImageUpload = async (item, file) => {
+    setUploadingId(item.id);
+    try {
+      const formData = new FormData();
+      formData.append('image', file);
+      const res = await fetch(`/api/menu/${item.id}/image`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+        body: formData,
+      });
+      if (!res.ok) throw new Error('Upload failed');
+      const updated = await res.json();
+      setItems(prev => prev.map(i => i.id === item.id ? updated : i));
+    } catch (err) {
+      alert(err.message);
+    } finally {
+      setUploadingId(null);
+    }
+  };
+
+  const handleRemoveImage = async (item) => {
+    setUploadingId(item.id);
+    try {
+      await fetch(`/api/menu/${item.id}/image`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
+      setItems(prev => prev.map(i => i.id === item.id ? { ...i, image_url: null } : i));
+    } finally {
+      setUploadingId(null);
+    }
+  };
+
   const filtered = filterCat === 'all' ? items : items.filter(i => i.category === filterCat);
 
   return (
@@ -96,7 +127,22 @@ export default function AdminMenuManager() {
           <div className="menu-admin-grid">
             {filtered.map(item => (
               <div key={item.id} className={`menu-admin-card ${!item.available ? 'unavailable' : ''}`}>
-                <div className="menu-admin-emoji">{item.emoji}</div>
+                {/* Image area */}
+                <div className="menu-admin-img-wrap">
+                  {item.image_url
+                    ? <img src={item.image_url} alt={item.name} className="menu-admin-img" />
+                    : <div className="menu-admin-emoji">{item.emoji}</div>
+                  }
+                  <label className="menu-img-upload-btn" title="Upload photo">
+                    {uploadingId === item.id ? '...' : '📷'}
+                    <input type="file" accept="image/*" style={{ display: 'none' }}
+                      onChange={e => e.target.files[0] && handleImageUpload(item, e.target.files[0])} />
+                  </label>
+                  {item.image_url && (
+                    <button className="menu-img-remove-btn" title="Remove photo"
+                      onClick={() => handleRemoveImage(item)}>✕</button>
+                  )}
+                </div>
                 <div className="menu-admin-body">
                   <div className="menu-admin-name">{item.name}</div>
                   <div className="menu-admin-cat">{item.category}</div>

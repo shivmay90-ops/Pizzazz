@@ -11,6 +11,7 @@ import AdminLogin from './pages/admin/AdminLogin';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminOrders from './pages/admin/AdminOrders';
 import AdminMenuManager from './pages/admin/AdminMenuManager';
+import AdminSlots from './pages/admin/AdminSlots';
 
 function RequireAuth({ children }) {
   const token = localStorage.getItem('admin_token');
@@ -43,6 +44,7 @@ export default function App() {
       <Route path="/admin/dashboard" element={<RequireAuth><AdminDashboard /></RequireAuth>} />
       <Route path="/admin/orders" element={<RequireAuth><AdminOrders /></RequireAuth>} />
       <Route path="/admin/menu" element={<RequireAuth><AdminMenuManager /></RequireAuth>} />
+      <Route path="/admin/slots" element={<RequireAuth><AdminSlots /></RequireAuth>} />
 
       {/* Catch all */}
       <Route path="*" element={<Navigate to="/" replace />} />

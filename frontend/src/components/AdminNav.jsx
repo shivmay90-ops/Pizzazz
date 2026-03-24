@@ -33,6 +33,9 @@ export default function AdminNav() {
         <NavLink to="/admin/menu" className={({ isActive }) => `admin-nav-link ${isActive ? 'active' : ''}`}>
           <span>🍕</span> Menu
         </NavLink>
+        <NavLink to="/admin/slots" className={({ isActive }) => `admin-nav-link ${isActive ? 'active' : ''}`}>
+          <span>🕐</span> Time Slots
+        </NavLink>
       </nav>
 
       <div className="admin-nav-footer">

@@ -1,13 +1,24 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import './Cart.css';
 
 export default function Cart() {
-  const { items, removeItem, updateQuantity, itemCount, subtotal, deliveryFee, total, isOpen, setIsOpen } = useCart();
+  const { items, removeItem, updateQuantity, itemCount, subtotal, isOpen, setIsOpen } = useCart();
   const navigate = useNavigate();
+  const [availableSlots, setAvailableSlots] = useState(null); // null = loading
+
+  useEffect(() => {
+    if (!isOpen || items.length === 0) return;
+    fetch('/api/slots/today')
+      .then(r => r.json())
+      .then(data => setAvailableSlots(Array.isArray(data) ? data.filter(s => !s.is_booked).length : 0))
+      .catch(() => setAvailableSlots(0));
+  }, [isOpen, items.length]);
 
   if (!isOpen) return null;
+
+  const noSlots = availableSlots === 0;
 
   const handleCheckout = () => {
     setIsOpen(false);
@@ -55,22 +66,33 @@ export default function Cart() {
 
             <div className="cart-footer">
               <div className="cart-summary">
-                <div className="summary-row">
-                  <span>Subtotal</span>
-                  <span>₹{subtotal}</span>
-                </div>
-                <div className="summary-row">
-                  <span>Delivery fee</span>
-                  <span>₹{deliveryFee}</span>
-                </div>
                 <div className="summary-row total-row">
                   <span>Total</span>
-                  <span>₹{total}</span>
+                  <span>₹{subtotal}</span>
                 </div>
               </div>
-              <button className="btn btn-primary btn-lg" style={{ width: '100%' }} onClick={handleCheckout}>
-                Proceed to Checkout →
+              {availableSlots !== null && (
+                <div style={{
+                  padding: '8px 12px', borderRadius: 8, marginBottom: 10, fontSize: 13, fontWeight: 600,
+                  background: noSlots ? '#FFF0F0' : '#F0FFF4',
+                  color: noSlots ? '#C0161C' : '#1a7a3c',
+                  textAlign: 'center',
+                }}>
+                  {noSlots
+                    ? '❌ No pickup slots available today'
+                    : `✅ ${availableSlots} pickup slot${availableSlots !== 1 ? 's' : ''} available today`
+                  }
+                </div>
+              )}
+              <button className="btn btn-primary btn-lg" style={{ width: '100%' }} onClick={handleCheckout}
+                disabled={noSlots}>
+                {noSlots ? 'Ordering Unavailable' : 'Proceed to Checkout →'}
               </button>
+              {noSlots && (
+                <p style={{ textAlign: 'center', fontSize: 12, color: 'var(--text-light)', marginTop: 8 }}>
+                  Please call us to place your order.
+                </p>
+              )}
             </div>
           </>
         )}

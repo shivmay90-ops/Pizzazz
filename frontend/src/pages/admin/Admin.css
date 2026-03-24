@@ -153,7 +153,60 @@
 .menu-admin-card:hover { box-shadow: var(--shadow-lg); }
 .menu-admin-card.unavailable { opacity: 0.6; }
 
-.menu-admin-emoji { font-size: 40px; flex-shrink: 0; }
+.menu-admin-emoji { font-size: 40px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; width: 72px; height: 72px; }
+
+.menu-admin-img-wrap {
+  position: relative;
+  width: 72px;
+  height: 72px;
+  flex-shrink: 0;
+  border-radius: 8px;
+  overflow: visible;
+}
+
+.menu-admin-img {
+  width: 72px;
+  height: 72px;
+  object-fit: cover;
+  border-radius: 8px;
+  display: block;
+}
+
+.menu-img-upload-btn {
+  position: absolute;
+  bottom: -6px;
+  right: -6px;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 50%;
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  cursor: pointer;
+  box-shadow: var(--shadow);
+  z-index: 1;
+}
+
+.menu-img-remove-btn {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  background: #C0161C;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  font-size: 10px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+}
 
 .menu-admin-body { flex: 1; min-width: 0; }
 .menu-admin-name { font-weight: 800; font-size: 15px; margin-bottom: 2px; }

@@ -20,7 +20,7 @@ export default function OrderConfirmation() {
       <div className="confirmation-hero">
         <div className="check-circle">✓</div>
         <h1>Order Placed!</h1>
-        <p>Thanks {order.customer_name}! Your pizza is on its way 🛵</p>
+        <p>Thanks {order.customer_name}! Your pizza is being prepared 🍕</p>
       </div>
 
       <div className="page-container confirmation-content">
@@ -31,16 +31,16 @@ export default function OrderConfirmation() {
 
           <div className="confirmation-details">
             <div className="detail-section">
-              <h3>Delivery To</h3>
+              <h3>Pickup Details</h3>
               <p><strong>{order.customer_name}</strong></p>
               <p>📞 {order.customer_phone}</p>
-              <p>📍 {order.customer_address}</p>
+              {order.time_slot && <p>🕐 Pickup slot: {order.time_slot}</p>}
             </div>
 
             <div className="detail-section">
               <h3>Order Status</h3>
               <div className="status-track">
-                {['Pending', 'Preparing', 'Ready', 'Out for Delivery', 'Delivered'].map((step, i) => (
+                {['Received', 'In Kitchen', 'Ready', 'Done'].map((step, i) => (
                   <div key={step} className={`status-step ${i === 0 ? 'active' : ''}`}>
                     <div className="step-dot" />
                     <span>{step}</span>
@@ -60,8 +60,6 @@ export default function OrderConfirmation() {
               </div>
             ))}
             <div className="conf-totals">
-              <div className="conf-total-line"><span>Subtotal</span><span>₹{order.subtotal}</span></div>
-              <div className="conf-total-line"><span>Delivery</span><span>₹{order.delivery_fee}</span></div>
               <div className="conf-total-line grand"><span>Total</span><span>₹{order.total}</span></div>
             </div>
           </div>
@@ -81,8 +79,8 @@ export default function OrderConfirmation() {
         <div className="est-delivery">
           <span className="est-icon">⏱</span>
           <div>
-            <strong>Estimated delivery time</strong>
-            <p>30–45 minutes</p>
+            <strong>Estimated pickup time</strong>
+            <p>20–30 minutes</p>
           </div>
         </div>
       </div>
