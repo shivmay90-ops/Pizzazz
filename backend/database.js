@@ -1,6 +1,9 @@
 const Database = require('better-sqlite3');
 const path = require('path');
+const fs = require('fs');
 const { DATA_DIR } = require('./dataDir');
+
+if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
 
 const db = new Database(path.join(DATA_DIR, 'pizzazz.db'));
 
