@@ -6,8 +6,9 @@ const multer = require('multer');
 const db = require('../database');
 const { authenticateAdmin } = require('../middleware/auth');
 const builderOptions = require('../data/builderOptions');
+const { DATA_DIR } = require('../dataDir');
 
-const uploadsDir = path.join(__dirname, '..', 'uploads');
+const uploadsDir = path.join(DATA_DIR, 'uploads');
 if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
 
 const storage = multer.diskStorage({
@@ -80,7 +81,7 @@ router.post('/:id/image', authenticateAdmin, upload.single('image'), (req, res) 
 
   // Delete old image file if it exists
   if (existing.image_url) {
-    const oldPath = path.join(__dirname, '..', existing.image_url.replace(/^\//, ''));
+    const oldPath = path.join(uploadsDir, path.basename(existing.image_url));
     if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
   }
 
@@ -95,7 +96,7 @@ router.delete('/:id/image', authenticateAdmin, (req, res) => {
   const existing = db.prepare('SELECT * FROM menu_items WHERE id = ?').get(req.params.id);
   if (!existing) return res.status(404).json({ error: 'Item not found' });
   if (existing.image_url) {
-    const imgPath = path.join(__dirname, '..', existing.image_url.replace(/^\//, ''));
+    const imgPath = path.join(uploadsDir, path.basename(existing.image_url));
     if (fs.existsSync(imgPath)) fs.unlinkSync(imgPath);
   }
   db.prepare('UPDATE menu_items SET image_url = NULL WHERE id = ?').run(req.params.id);
