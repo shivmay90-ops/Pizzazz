@@ -64,6 +64,8 @@ const alterStatements = [
   "ALTER TABLE orders ADD COLUMN order_type TEXT DEFAULT 'Standard'",
   "ALTER TABLE menu_items ADD COLUMN is_special INTEGER DEFAULT 0",
   "ALTER TABLE menu_items ADD COLUMN image_url TEXT",
+  "ALTER TABLE menu_items ADD COLUMN sizes TEXT",
+  "ALTER TABLE menu_items ADD COLUMN is_veg INTEGER DEFAULT 1",
 ];
 
 for (const stmt of alterStatements) {

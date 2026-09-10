@@ -42,7 +42,48 @@
   font-weight: 800;
   color: var(--dark);
   margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
+
+.veg-dot {
+  flex-shrink: 0;
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  border: 2px solid var(--success);
+  position: relative;
+}
+.veg-dot::after {
+  content: '';
+  position: absolute;
+  inset: 2px;
+  border-radius: 50%;
+  background: var(--success);
+}
+.veg-dot.non-veg { border-color: var(--red); }
+.veg-dot.non-veg::after { background: var(--red); }
+
+.menu-card-sizes {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+
+.size-pill {
+  padding: 5px 10px;
+  border-radius: 16px;
+  border: 2px solid var(--border);
+  background: white;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-light);
+  transition: all 0.2s;
+}
+.size-pill:hover { border-color: var(--red); color: var(--red); }
+.size-pill.active { background: var(--red); border-color: var(--red); color: white; }
 
 .menu-card-desc {
   font-size: 13px;

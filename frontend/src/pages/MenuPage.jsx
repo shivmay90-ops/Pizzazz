@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, Link } from 'react-router-dom';
 import MenuItemCard from '../components/MenuItemCard';
 import { useCart } from '../context/CartContext';
 import './MenuPage.css';
 
-const CATEGORIES = ['All', 'Pizza', 'Sides', 'Drinks', 'Desserts'];
+const CATEGORIES = ['All', 'Pizza', 'Calzones', 'Focaccia'];
+const CATEGORY_ICON = { Pizza: '🍕', Calzones: '🥟', Focaccia: '🫓' };
 
 export default function MenuPage() {
   const [menu, setMenu] = useState([]);
@@ -44,6 +45,14 @@ export default function MenuPage() {
       </div>
 
       <div className="page-container menu-content">
+        <Link to="/build-your-own" className="builder-promo">
+          <div>
+            <h3>🍕 Make Your Pizza, Your Rules</h3>
+            <p>Pick your sauce, veggies, protein & extras — build your own 12" pizza</p>
+          </div>
+          <span className="builder-promo-cta">Start Building →</span>
+        </Link>
+
         {/* Category tabs */}
         <div className="category-tabs">
           {CATEGORIES.map(cat => (
@@ -52,7 +61,7 @@ export default function MenuPage() {
               className={`cat-tab ${selectedCategory === cat ? 'active' : ''}`}
               onClick={() => setSearchParams(cat === 'All' ? {} : { category: cat })}
             >
-              {cat === 'All' ? '🍽️ All' : cat === 'Pizza' ? '🍕 ' + cat : cat === 'Sides' ? '🍟 ' + cat : cat === 'Drinks' ? '🥤 ' + cat : '🍨 ' + cat}
+              {cat === 'All' ? '🍽️ All' : `${CATEGORY_ICON[cat]} ${cat}`}
             </button>
           ))}
         </div>
@@ -65,9 +74,7 @@ export default function MenuPage() {
             // Show all categories grouped
             Object.entries(grouped).map(([cat, items]) => (
               <div key={cat} className="menu-section">
-                <h2 className="menu-section-title">
-                  {cat === 'Pizza' ? '🍕' : cat === 'Sides' ? '🍟' : cat === 'Drinks' ? '🥤' : '🍨'} {cat}
-                </h2>
+                <h2 className="menu-section-title">{CATEGORY_ICON[cat]} {cat}</h2>
                 <div className="menu-grid">
                   {items.map(item => <MenuItemCard key={item.id} item={item} />)}
                 </div>

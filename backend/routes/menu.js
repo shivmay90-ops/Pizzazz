@@ -5,6 +5,7 @@ const fs = require('fs');
 const multer = require('multer');
 const db = require('../database');
 const { authenticateAdmin } = require('../middleware/auth');
+const builderOptions = require('../data/builderOptions');
 
 const uploadsDir = path.join(__dirname, '..', 'uploads');
 if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
@@ -23,6 +24,11 @@ const upload = multer({
     if (file.mimetype.startsWith('image/')) cb(null, true);
     else cb(new Error('Only image files are allowed'));
   },
+});
+
+// Public: build-your-own pizza options (sauces, veggies, proteins, extras, tiers)
+router.get('/builder-options', (req, res) => {
+  res.json(builderOptions);
 });
 
 // Public: today's special item
@@ -50,13 +56,19 @@ router.get('/all', authenticateAdmin, (req, res) => {
 
 // Admin: add menu item
 router.post('/', authenticateAdmin, (req, res) => {
-  const { name, description, price, category, emoji, available } = req.body;
-  if (!name || !price || !category) {
-    return res.status(400).json({ error: 'name, price, and category are required' });
+  const { name, description, price, category, emoji, available, is_veg, sizes } = req.body;
+  if (!name || !category) {
+    return res.status(400).json({ error: 'name and category are required' });
+  }
+  const hasSizes = sizes && Object.keys(sizes).length > 0;
+  const sizesJson = hasSizes ? JSON.stringify(sizes) : null;
+  const finalPrice = hasSizes ? Math.min(...Object.values(sizes)) : price;
+  if (finalPrice === undefined || finalPrice === null || finalPrice === '') {
+    return res.status(400).json({ error: 'price is required when sizes are not provided' });
   }
   const result = db.prepare(
-    'INSERT INTO menu_items (name, description, price, category, emoji, available) VALUES (?, ?, ?, ?, ?, ?)'
-  ).run(name, description || '', price, category, emoji || '🍕', available !== false ? 1 : 0);
+    'INSERT INTO menu_items (name, description, price, category, emoji, available, is_veg, sizes) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
+  ).run(name, description || '', finalPrice, category, emoji || '🍕', available !== false ? 1 : 0, is_veg !== false ? 1 : 0, sizesJson);
   const item = db.prepare('SELECT * FROM menu_items WHERE id = ?').get(result.lastInsertRowid);
   res.status(201).json(item);
 });
@@ -105,19 +117,28 @@ router.put('/:id/special', authenticateAdmin, (req, res) => {
 
 // Admin: update menu item
 router.put('/:id', authenticateAdmin, (req, res) => {
-  const { name, description, price, category, emoji, available } = req.body;
+  const { name, description, price, category, emoji, available, is_veg, sizes } = req.body;
   const existing = db.prepare('SELECT * FROM menu_items WHERE id = ?').get(req.params.id);
   if (!existing) return res.status(404).json({ error: 'Item not found' });
 
+  const sizesProvided = sizes !== undefined;
+  const hasSizes = sizesProvided ? (sizes && Object.keys(sizes).length > 0) : Boolean(existing.sizes);
+  const sizesJson = sizesProvided ? (hasSizes ? JSON.stringify(sizes) : null) : existing.sizes;
+  const finalPrice = hasSizes
+    ? Math.min(...Object.values(sizesProvided ? sizes : JSON.parse(sizesJson)))
+    : (price ?? existing.price);
+
   db.prepare(
-    'UPDATE menu_items SET name=?, description=?, price=?, category=?, emoji=?, available=? WHERE id=?'
+    'UPDATE menu_items SET name=?, description=?, price=?, category=?, emoji=?, available=?, is_veg=?, sizes=? WHERE id=?'
   ).run(
     name ?? existing.name,
     description ?? existing.description,
-    price ?? existing.price,
+    finalPrice,
     category ?? existing.category,
     emoji ?? existing.emoji,
     available !== undefined ? (available ? 1 : 0) : existing.available,
+    is_veg !== undefined ? (is_veg ? 1 : 0) : existing.is_veg,
+    sizesJson,
     req.params.id
   );
   const updated = db.prepare('SELECT * FROM menu_items WHERE id = ?').get(req.params.id);

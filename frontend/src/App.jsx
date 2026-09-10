@@ -5,6 +5,7 @@ import Navbar from './components/Navbar';
 import Cart from './components/Cart';
 import Home from './pages/Home';
 import MenuPage from './pages/MenuPage';
+import BuildYourOwn from './pages/BuildYourOwn';
 import Checkout from './pages/Checkout';
 import OrderConfirmation from './pages/OrderConfirmation';
 import AdminLogin from './pages/admin/AdminLogin';
@@ -36,6 +37,7 @@ export default function App() {
       {/* Customer routes */}
       <Route path="/" element={<CustomerLayout><Home /></CustomerLayout>} />
       <Route path="/menu" element={<CustomerLayout><MenuPage /></CustomerLayout>} />
+      <Route path="/build-your-own" element={<CustomerLayout><BuildYourOwn /></CustomerLayout>} />
       <Route path="/checkout" element={<CustomerLayout><Checkout /></CustomerLayout>} />
       <Route path="/order-confirmation" element={<CustomerLayout><OrderConfirmation /></CustomerLayout>} />
 

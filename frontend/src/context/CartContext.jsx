@@ -14,23 +14,25 @@ export function CartProvider({ children }) {
     localStorage.setItem('pizzazz-cart', JSON.stringify(items));
   }, [items]);
 
-  const addItem = (menuItem) => {
+  const addItem = (lineItem) => {
     setItems(prev => {
-      const existing = prev.find(i => i.id === menuItem.id);
+      const existing = prev.find(i => i.cartId === lineItem.cartId);
       if (existing) {
-        return prev.map(i => i.id === menuItem.id ? { ...i, quantity: i.quantity + 1 } : i);
+        return prev.map(i => i.cartId === lineItem.cartId
+          ? { ...i, quantity: i.quantity + (lineItem.quantity || 1) }
+          : i);
       }
-      return [...prev, { ...menuItem, quantity: 1 }];
+      return [...prev, { ...lineItem, quantity: lineItem.quantity || 1 }];
     });
   };
 
-  const removeItem = (id) => {
-    setItems(prev => prev.filter(i => i.id !== id));
+  const removeItem = (cartId) => {
+    setItems(prev => prev.filter(i => i.cartId !== cartId));
   };
 
-  const updateQuantity = (id, quantity) => {
-    if (quantity < 1) { removeItem(id); return; }
-    setItems(prev => prev.map(i => i.id === id ? { ...i, quantity } : i));
+  const updateQuantity = (cartId, quantity) => {
+    if (quantity < 1) { removeItem(cartId); return; }
+    setItems(prev => prev.map(i => i.cartId === cartId ? { ...i, quantity } : i));
   };
 
   const clearCart = () => setItems([]);

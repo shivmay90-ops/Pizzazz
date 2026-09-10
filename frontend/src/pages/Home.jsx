@@ -213,15 +213,15 @@ export default function Home() {
       <section className="categories-section">
         <div className="page-container">
           <h2 className="section-title">What are you craving?</h2>
-          <p className="section-subtitle">From classic Margherita to our signature Goa Special</p>
+          <p className="section-subtitle">From wood-fired classics to your own creation</p>
           <div className="categories-grid">
             {[
-              { name: 'Pizzas',   emoji: '🍕', desc: '10 varieties',              color: '#FFE0E0' },
-              { name: 'Sides',    emoji: '🍟', desc: 'Garlic bread, wings & more', color: '#FFF3CD' },
-              { name: 'Drinks',   emoji: '🥤', desc: 'Fresh & refreshing',         color: '#D1ECF1' },
-              { name: 'Desserts', emoji: '🍨', desc: 'Sweet endings',              color: '#E8D5F5' },
+              { name: 'Pizza',         emoji: '🍕', desc: 'Veg & non-veg, 9" or 12"', color: '#FFE0E0', to: '/menu?category=Pizza' },
+              { name: 'Calzones',      emoji: '🥟', desc: 'Small or big',             color: '#FFF3CD', to: '/menu?category=Calzones' },
+              { name: 'Focaccia',      emoji: '🫓', desc: 'Herb-baked flatbread',      color: '#D1ECF1', to: '/menu?category=Focaccia' },
+              { name: 'Build Your Own', emoji: '🎨', desc: 'Your rules, your pizza',  color: '#E8D5F5', to: '/build-your-own' },
             ].map(cat => (
-              <Link key={cat.name} to={`/menu?category=${cat.name}`} className="category-card" style={{ background: cat.color }}>
+              <Link key={cat.name} to={cat.to} className="category-card" style={{ background: cat.color }}>
                 <span className="category-emoji">{cat.emoji}</span>
                 <span className="category-name">{cat.name}</span>
                 <span className="category-desc">{cat.desc}</span>
@@ -254,9 +254,10 @@ export default function Home() {
               <p>Goa's finest pizza, made with love</p>
             </div>
             <div className="footer-info">
-              <p>📞 735 057 6417</p>
+              <p>📞 735 057 6417 · 820 893 3263</p>
               <p>📍 Mapusa, North Goa</p>
-              <p>🕐 11am – 11pm daily</p>
+              <p>🕐 12pm–2pm & 4pm–11pm</p>
+              <p>Closed 2nd & 4th Saturday + Sunday</p>
             </div>
           </div>
           <div className="footer-bottom">

@@ -2,8 +2,11 @@ import React, { useState, useEffect } from 'react';
 import AdminNav from '../../components/AdminNav';
 import './Admin.css';
 
-const CATEGORIES = ['Pizza', 'Sides', 'Drinks', 'Desserts'];
-const EMPTY_FORM = { name: '', description: '', price: '', category: 'Pizza', emoji: '🍕', available: true };
+const CATEGORIES = ['Pizza', 'Calzones', 'Focaccia'];
+const EMPTY_FORM = {
+  name: '', description: '', price: '', category: 'Pizza', emoji: '🍕', available: true, is_veg: true,
+  hasSizes: false, sizeLabels: ['9"', '12"'], sizePrices: ['', ''],
+};
 
 export default function AdminMenuManager() {
   const [items, setItems] = useState([]);
@@ -29,7 +32,15 @@ export default function AdminMenuManager() {
   const openAdd = () => { setEditItem(null); setForm(EMPTY_FORM); setShowModal(true); };
   const openEdit = (item) => {
     setEditItem(item);
-    setForm({ name: item.name, description: item.description, price: String(item.price), category: item.category, emoji: item.emoji, available: Boolean(item.available) });
+    let sizes = null;
+    try { sizes = item.sizes ? JSON.parse(item.sizes) : null; } catch { sizes = null; }
+    setForm({
+      name: item.name, description: item.description, price: String(item.price), category: item.category,
+      emoji: item.emoji, available: Boolean(item.available), is_veg: Boolean(item.is_veg),
+      hasSizes: Boolean(sizes),
+      sizeLabels: sizes ? Object.keys(sizes) : ['9"', '12"'],
+      sizePrices: sizes ? Object.values(sizes).map(String) : ['', ''],
+    });
     setShowModal(true);
   };
 
@@ -37,12 +48,20 @@ export default function AdminMenuManager() {
     e.preventDefault();
     setSaving(true);
     try {
+      const sizes = form.hasSizes
+        ? Object.fromEntries(form.sizeLabels.map((label, i) => [label, parseFloat(form.sizePrices[i])]).filter(([label, price]) => label && !isNaN(price)))
+        : null;
       const url = editItem ? `/api/menu/${editItem.id}` : '/api/menu';
       const method = editItem ? 'PUT' : 'POST';
       const res = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ ...form, price: parseFloat(form.price) }),
+        body: JSON.stringify({
+          name: form.name, description: form.description, category: form.category, emoji: form.emoji,
+          available: form.available, is_veg: form.is_veg,
+          price: form.hasSizes ? undefined : parseFloat(form.price),
+          sizes,
+        }),
       });
       if (!res.ok) throw new Error('Save failed');
       fetchItems();
@@ -147,7 +166,7 @@ export default function AdminMenuManager() {
                   <div className="menu-admin-name">{item.name}</div>
                   <div className="menu-admin-cat">{item.category}</div>
                   <div className="menu-admin-desc">{item.description}</div>
-                  <div className="menu-admin-price">₹{item.price}</div>
+                  <div className="menu-admin-price">{item.sizes ? `From ₹${item.price}` : `₹${item.price}`}</div>
                 </div>
                 <div className="menu-admin-actions">
                   <label className="toggle-label">
@@ -188,8 +207,10 @@ export default function AdminMenuManager() {
                 </div>
                 <div className="form-row">
                   <div className="form-group" style={{ flex: 1 }}>
-                    <label>Price (₹) *</label>
-                    <input className="form-control" type="number" min="0" step="0.01" value={form.price} onChange={e => setForm(f => ({ ...f, price: e.target.value }))} required />
+                    <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}>
+                      <input type="checkbox" checked={form.hasSizes} onChange={e => setForm(f => ({ ...f, hasSizes: e.target.checked }))} />
+                      Has multiple sizes
+                    </label>
                   </div>
                   <div className="form-group" style={{ flex: 1 }}>
                     <label>Category *</label>
@@ -198,10 +219,35 @@ export default function AdminMenuManager() {
                     </select>
                   </div>
                 </div>
+
+                {form.hasSizes ? (
+                  <div className="form-row">
+                    {form.sizeLabels.map((label, i) => (
+                      <div key={i} className="form-group" style={{ flex: 1, display: 'flex', gap: 6 }}>
+                        <input className="form-control" placeholder="Size" value={label}
+                          onChange={e => setForm(f => ({ ...f, sizeLabels: f.sizeLabels.map((l, idx) => idx === i ? e.target.value : l) }))} />
+                        <input className="form-control" type="number" min="0" step="0.01" placeholder="₹" value={form.sizePrices[i]}
+                          onChange={e => setForm(f => ({ ...f, sizePrices: f.sizePrices.map((p, idx) => idx === i ? e.target.value : p) }))} />
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="form-group">
+                    <label>Price (₹) *</label>
+                    <input className="form-control" type="number" min="0" step="0.01" value={form.price} onChange={e => setForm(f => ({ ...f, price: e.target.value }))} required />
+                  </div>
+                )}
+
                 <div className="form-group">
                   <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}>
                     <input type="checkbox" checked={form.available} onChange={e => setForm(f => ({ ...f, available: e.target.checked }))} />
                     Available for ordering
+                  </label>
+                </div>
+                <div className="form-group">
+                  <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}>
+                    <input type="checkbox" checked={form.is_veg} onChange={e => setForm(f => ({ ...f, is_veg: e.target.checked }))} />
+                    Vegetarian
                   </label>
                 </div>
                 <div className="modal-footer">

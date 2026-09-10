@@ -47,19 +47,20 @@ export default function Cart() {
           <>
             <div className="cart-items">
               {items.map(item => (
-                <div key={item.id} className="cart-item">
+                <div key={item.cartId} className="cart-item">
                   <div className="cart-item-emoji">{item.emoji}</div>
                   <div className="cart-item-info">
                     <div className="cart-item-name">{item.name}</div>
+                    {item.description && <div className="cart-item-desc">{item.description}</div>}
                     <div className="cart-item-price">₹{item.price} each</div>
                   </div>
                   <div className="cart-item-controls">
-                    <button className="qty-btn" onClick={() => updateQuantity(item.id, item.quantity - 1)}>−</button>
+                    <button className="qty-btn" onClick={() => updateQuantity(item.cartId, item.quantity - 1)}>−</button>
                     <span className="qty-value">{item.quantity}</span>
-                    <button className="qty-btn" onClick={() => updateQuantity(item.id, item.quantity + 1)}>+</button>
+                    <button className="qty-btn" onClick={() => updateQuantity(item.cartId, item.quantity + 1)}>+</button>
                   </div>
                   <div className="cart-item-total">₹{item.price * item.quantity}</div>
-                  <button className="cart-item-remove" onClick={() => removeItem(item.id)}>🗑</button>
+                  <button className="cart-item-remove" onClick={() => removeItem(item.cartId)}>🗑</button>
                 </div>
               ))}
             </div>

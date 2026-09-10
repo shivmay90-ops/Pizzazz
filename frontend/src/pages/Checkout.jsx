@@ -62,7 +62,10 @@ export default function Checkout() {
           customer_name: form.customer_name,
           customer_phone: form.customer_phone,
           notes: form.notes,
-          items: items.map(i => ({ id: i.id, quantity: i.quantity })),
+          items: items.map(i => i.custom
+            ? { custom: i.custom, quantity: i.quantity, tierId: i.tierId, sauce: i.sauce, veggies: i.veggies, proteins: i.proteins, extras: i.extras }
+            : { id: i.id, quantity: i.quantity, size: i.size }
+          ),
           time_slot: form.time_slot || null,
           is_heart_shape: form.is_heart_shape ? 1 : 0,
           order_type: 'Standard',
@@ -157,9 +160,12 @@ export default function Checkout() {
               <h2 className="checkout-card-title">Your Order</h2>
               <div className="order-items">
                 {items.map(item => (
-                  <div key={item.id} className="order-item-row">
+                  <div key={item.cartId} className="order-item-row">
                     <span className="order-item-emoji">{item.emoji}</span>
-                    <span className="order-item-name">{item.name}</span>
+                    <span className="order-item-name">
+                      {item.name}
+                      {item.description && <div className="order-item-desc">{item.description}</div>}
+                    </span>
                     <span className="order-item-qty">×{item.quantity}</span>
                     <span className="order-item-price">₹{item.price * item.quantity}</span>
                   </div>

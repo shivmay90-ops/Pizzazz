@@ -2,10 +2,73 @@ const express = require('express');
 const router = express.Router();
 const db = require('../database');
 const { authenticateAdmin } = require('../middleware/auth');
+const builderOptions = require('../data/builderOptions');
 
 const ORDER_CAP = 30;
 const VALID_STATUSES = ['Received', 'In Kitchen', 'Ready', 'Done', 'Cancelled'];
 const todayStr = () => new Date().toISOString().split('T')[0];
+
+// Resolves a cart line item into a priced order line. Price is always computed
+// server-side (from the menu_items table or the builder config) — client-sent
+// prices are never trusted.
+function resolveOrderItem(item) {
+  const quantity = parseInt(item.quantity) || 1;
+
+  if (item.custom === 'pizza') {
+    const tier = builderOptions.tiers.find(t => t.id === item.tierId);
+    if (!tier) throw new Error('Invalid build-your-own tier');
+
+    const sauce = builderOptions.sauces.find(s => s.id === item.sauce);
+    if (!sauce) throw new Error('Invalid sauce selection');
+
+    const veggies = (Array.isArray(item.veggies) ? item.veggies : [])
+      .map(id => builderOptions.veggies.find(v => v.id === id))
+      .filter(Boolean);
+    if (tier.veggieLimit !== null && veggies.length > tier.veggieLimit) {
+      throw new Error(`Too many veggies selected for ${tier.label}`);
+    }
+
+    const proteinsSel = (Array.isArray(item.proteins) ? item.proteins : [])
+      .map(id => builderOptions.proteins.find(p => p.id === id))
+      .filter(Boolean);
+    if (tier.proteinLimit !== null && proteinsSel.length > tier.proteinLimit) {
+      throw new Error(`Too many proteins selected for ${tier.label}`);
+    }
+
+    const extrasSel = (Array.isArray(item.extras) ? item.extras : [])
+      .map(id => builderOptions.extras.find(e => e.id === id))
+      .filter(Boolean);
+
+    const isNonVeg = proteinsSel.some(p => !p.is_veg);
+    const price = (isNonVeg ? tier.priceNonVeg : tier.priceVeg) + extrasSel.reduce((sum, e) => sum + e.price, 0);
+
+    const description = [
+      `Tier: ${tier.label}`,
+      `Sauce: ${sauce.name}`,
+      veggies.length ? `Veggies: ${veggies.map(v => v.name).join(', ')}` : null,
+      proteinsSel.length ? `Protein: ${proteinsSel.map(p => p.name).join(', ')}` : null,
+      extrasSel.length ? `Extras: ${extrasSel.map(e => `+${e.name}`).join(', ')}` : null,
+    ].filter(Boolean).join(' · ');
+
+    return { name: 'Build Your Own Pizza (12")', price, quantity, emoji: '🍕', description };
+  }
+
+  const menuItem = db.prepare('SELECT * FROM menu_items WHERE id = ? AND available = 1').get(item.id);
+  if (!menuItem) throw new Error(`Menu item not found: ${item.id}`);
+
+  let price = menuItem.price;
+  let name = menuItem.name;
+  if (menuItem.sizes) {
+    const sizeMap = JSON.parse(menuItem.sizes);
+    if (!item.size || !(item.size in sizeMap)) {
+      throw new Error(`Please select a valid size for ${menuItem.name}`);
+    }
+    price = sizeMap[item.size];
+    name = `${menuItem.name} (${item.size})`;
+  }
+
+  return { id: menuItem.id, name, price, quantity, emoji: menuItem.emoji };
+}
 
 // Public: place an order (enforces 30/day cap)
 router.post('/', (req, res) => {
@@ -24,14 +87,14 @@ router.post('/', (req, res) => {
   let subtotal = 0;
   const validatedItems = [];
 
-  for (const item of items) {
-    const menuItem = db.prepare('SELECT * FROM menu_items WHERE id = ? AND available = 1').get(item.id);
-    if (!menuItem) {
-      return res.status(400).json({ error: `Menu item not found: ${item.id}` });
+  try {
+    for (const item of items) {
+      const resolved = resolveOrderItem(item);
+      subtotal += resolved.price * resolved.quantity;
+      validatedItems.push(resolved);
     }
-    const quantity = parseInt(item.quantity) || 1;
-    subtotal += menuItem.price * quantity;
-    validatedItems.push({ id: menuItem.id, name: menuItem.name, price: menuItem.price, quantity, emoji: menuItem.emoji });
+  } catch (e) {
+    return res.status(400).json({ error: e.message });
   }
 
   const delivery_fee = 0;
@@ -64,14 +127,14 @@ router.post('/admin', authenticateAdmin, (req, res) => {
   let subtotal = 0;
   const validatedItems = [];
 
-  for (const item of items) {
-    const menuItem = db.prepare('SELECT * FROM menu_items WHERE id = ? AND available = 1').get(item.id);
-    if (!menuItem) {
-      return res.status(400).json({ error: `Menu item not found: ${item.id}` });
+  try {
+    for (const item of items) {
+      const resolved = resolveOrderItem(item);
+      subtotal += resolved.price * resolved.quantity;
+      validatedItems.push(resolved);
     }
-    const quantity = parseInt(item.quantity) || 1;
-    subtotal += menuItem.price * quantity;
-    validatedItems.push({ id: menuItem.id, name: menuItem.name, price: menuItem.price, quantity, emoji: menuItem.emoji });
+  } catch (e) {
+    return res.status(400).json({ error: e.message });
   }
 
   const delivery_fee = 0;

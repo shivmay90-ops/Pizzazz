@@ -21,6 +21,7 @@ export default function Navbar() {
         <div className="navbar-links">
           <Link to="/" className={`nav-link ${location.pathname === '/' ? 'active' : ''}`}>Home</Link>
           <Link to="/menu" className={`nav-link ${location.pathname === '/menu' ? 'active' : ''}`}>Menu</Link>
+          <Link to="/build-your-own" className={`nav-link ${location.pathname === '/build-your-own' ? 'active' : ''}`}>Build Your Own</Link>
         </div>
 
         <div className="navbar-right">

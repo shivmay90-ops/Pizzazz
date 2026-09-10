@@ -25,7 +25,7 @@ const SOURCE_STYLE = {
 
 const EMPTY_FORM = {
   customer_name: '', customer_phone: '', order_source: 'Walk-in',
-  time_slot: '', pizza_id: '', is_heart_shape: false, notes: '', order_type: 'Standard',
+  time_slot: '', pizza_id: '', size: '', is_heart_shape: false, notes: '', order_type: 'Standard',
 };
 
 export default function AdminOrders() {
@@ -105,6 +105,7 @@ export default function AdminOrders() {
     e.preventDefault();
     const pizzaItem = menuItems.find(m => m.id === parseInt(manualForm.pizza_id));
     if (!pizzaItem) { showToast('Please select a menu item', 'error'); return; }
+    if (pizzaItem.sizes && !manualForm.size) { showToast('Please select a size', 'error'); return; }
     setSubmitting(true);
     try {
       const res = await fetch('/api/orders/admin', {
@@ -114,7 +115,7 @@ export default function AdminOrders() {
           customer_name: manualForm.customer_name,
           customer_phone: manualForm.customer_phone,
           customer_address: '',
-          items: [{ id: pizzaItem.id, quantity: 1 }],
+          items: [{ id: pizzaItem.id, quantity: 1, size: pizzaItem.sizes ? manualForm.size : undefined }],
           notes: manualForm.notes,
           order_source: manualForm.order_source,
           time_slot: manualForm.time_slot || null,
@@ -276,7 +277,10 @@ export default function AdminOrders() {
                 <h4>Items</h4>
                 {selectedOrder.items.map((item, i) => (
                   <div key={i} className="modal-item-row">
-                    <span>{item.emoji} {item.name}</span>
+                    <span>
+                      {item.emoji} {item.name}
+                      {item.description && <div style={{ fontSize: 12, fontWeight: 400, color: 'var(--text-light)', marginTop: 2 }}>{item.description}</div>}
+                    </span>
                     <span>×{item.quantity}</span>
                     <span>₹{item.price * item.quantity}</span>
                   </div>
@@ -354,13 +358,30 @@ export default function AdminOrders() {
                 <div className="form-group">
                   <label>Pizza / Item *</label>
                   <select className="form-control" value={manualForm.pizza_id} required
-                    onChange={e => setManualForm(f => ({ ...f, pizza_id: e.target.value }))}>
+                    onChange={e => setManualForm(f => ({ ...f, pizza_id: e.target.value, size: '' }))}>
                     <option value="">— Select item —</option>
                     {menuItems.map(m => (
-                      <option key={m.id} value={m.id}>{m.emoji} {m.name} — ₹{m.price}</option>
+                      <option key={m.id} value={m.id}>{m.emoji} {m.name} — {m.sizes ? `From ₹${m.price}` : `₹${m.price}`}</option>
                     ))}
                   </select>
                 </div>
+                {(() => {
+                  const selected = menuItems.find(m => m.id === parseInt(manualForm.pizza_id));
+                  if (!selected?.sizes) return null;
+                  const sizeMap = JSON.parse(selected.sizes);
+                  return (
+                    <div className="form-group">
+                      <label>Size *</label>
+                      <select className="form-control" value={manualForm.size} required
+                        onChange={e => setManualForm(f => ({ ...f, size: e.target.value }))}>
+                        <option value="">— Select size —</option>
+                        {Object.entries(sizeMap).map(([label, price]) => (
+                          <option key={label} value={label}>{label} — ₹{price}</option>
+                        ))}
+                      </select>
+                    </div>
+                  );
+                })()}
                 {['Website', 'Walk-in'].includes(manualForm.order_source) && (
                   <div className="form-group">
                     <label>Time Slot</label>

@@ -38,6 +38,7 @@
 
 .order-item-emoji { font-size: 20px; }
 .order-item-name { flex: 1; font-weight: 600; }
+.order-item-desc { font-weight: 400; font-size: 11px; color: var(--text-light); margin-top: 2px; line-height: 1.4; }
 .order-item-qty { color: var(--text-light); }
 .order-item-price { font-weight: 700; color: var(--red); }
 

@@ -10,6 +10,36 @@
 
 .menu-content { padding: 40px 20px 100px; }
 
+.builder-promo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  background: linear-gradient(135deg, var(--dark), var(--dark2));
+  color: white;
+  border-radius: var(--radius);
+  padding: 24px 28px;
+  margin-bottom: 28px;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.builder-promo:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+.builder-promo h3 { font-size: 19px; font-weight: 800; margin-bottom: 4px; }
+.builder-promo p { font-size: 13px; opacity: 0.8; }
+.builder-promo-cta {
+  flex-shrink: 0;
+  background: var(--orange);
+  color: var(--dark);
+  font-weight: 800;
+  font-size: 14px;
+  padding: 10px 18px;
+  border-radius: 20px;
+  white-space: nowrap;
+}
+
+@media (max-width: 600px) {
+  .builder-promo { flex-direction: column; align-items: flex-start; }
+}
+
 .category-tabs {
   display: flex;
   gap: 10px;

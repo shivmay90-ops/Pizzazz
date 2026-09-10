@@ -54,7 +54,10 @@ export default function OrderConfirmation() {
             <h3>Items Ordered</h3>
             {order.items.map((item, i) => (
               <div key={i} className="conf-item-row">
-                <span>{item.emoji} {item.name}</span>
+                <span>
+                  {item.emoji} {item.name}
+                  {item.description && <div className="conf-item-desc">{item.description}</div>}
+                </span>
                 <span>×{item.quantity}</span>
                 <span>₹{item.price * item.quantity}</span>
               </div>
